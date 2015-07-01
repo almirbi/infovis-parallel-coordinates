@@ -106,7 +106,7 @@ var g1ParallelCoordinatesPlexx = {
         this.data = arrData;
     },
     getVerticalAxisX1: function(i) {
-        var parallelAxesSpacing = parseInt(this.canvasWidth * 0.8 / (this.data[0].length - 1));
+        var parallelAxesSpacing = parseInt(this.canvasWidth * 0.8 / (this.data[0].length - 2));
         return parallelAxesSpacing * i + parseInt(this.canvasWidth * 0.1);
     },
     getVerticalAxisY1: function() {
@@ -137,13 +137,16 @@ var g1ParallelCoordinatesPlexx = {
             if(i == this.nameColumnIndex) continue;
 
             //calculate where to position the vertical axis along the x coordinate
-            //needs to be calibrated a bit a
+            //depending on which consecutive axis it is
             var x1 = this.getVerticalAxisX1(i);
             var x2 = this.getVerticalAxisX2(i);
 
+            //add the vertical axis
             this.parallelCoordinatesCanvas.add(
                 new Plexx.Line(x1, y1, x2, y2, this.lineWidth, Constants.LineType.Default, this.lineColour));
 
+            //add the label
+            //TODO on a large dataset .e.g. /cities/c2009.csv the labels cannot be distinguished
             this.parallelCoordinatesCanvas.add(
                 new Plexx.Text(axes[i], x1, 20 + y2, "#000000", 8, "Verdana", "left", "middle"));
         }
@@ -168,6 +171,9 @@ var g1ParallelCoordinatesPlexx = {
             var min = Math.min.apply(null, this.columns[axes[i]]);
             var max = Math.max.apply(null, this.columns[axes[i]]);
 
+
+            //TODO tickscale not working properly, check it out
+            //TODO this was just test code, feel free to rewrite it from beginning if you have a better idea, I am not sure whether this will work
             //var tickScale = new TickScale();
             //tickScale.setMinMaxPointsTicks(min, max, this.columns[axes[i]]);
 
@@ -192,6 +198,7 @@ var g1ParallelCoordinatesPlexx = {
             }
             */
 
+
             if (max == min) {
                 min = 0;
             }
@@ -201,18 +208,23 @@ var g1ParallelCoordinatesPlexx = {
                 min = 0;
             }
 
+            //used for calulating the ranges later ( maps input range to the output range )
             var R = (y2 - y1) / (max - min);
             this.columns[axes[i]]['R'] = R;
             this.columns[axes[i]]['max'] = max;
             this.columns[axes[i]]['min'] = min;
         }
 
+        //iterates through all the rows
         for (i = 1; i < this.data.length; i++) {
             var row = this.data[i];
             var points = [];
+
+            //iterates through each column
             for (var j = 0; j < row.length; j++) {
                 if(j == this.nameColumnIndex) continue;
 
+                //if its a categorical axis, use the map to decide where to put it
                 if(this.columns[axes[j]]['type'] == 'string') {
                     var y = this.columns[axes[j]]['map'][row[j]];
                     points.push(this.getVerticalAxisX1(j));
@@ -221,11 +233,16 @@ var g1ParallelCoordinatesPlexx = {
                     continue;
                 }
 
+                //else, calculate the mapping
                 R = this.columns[axes[j]]['R'];
                 max = this.columns[axes[j]]['max'];
                 min = this.columns[axes[j]]['min'];
                 var y = (row[j] - min) * R + y1;
 
+                //an array of points to draw a polyline
+                //each consecutive element is a coordinate for the polyline
+                //e.g. points = [x1, y1, x2, y2, x3, y3...];
+                //this would draw a polyline conecting points (x1, y1) (x2, y2) etc..
                 points.push(this.getVerticalAxisX1(j));
                 points.push(y);
             }
@@ -234,6 +251,7 @@ var g1ParallelCoordinatesPlexx = {
 
         this.parallelCoordinatesCanvas.render(this.renderContext);
     },
+    //create arrays which are actually columns, for easier calculating later (e.g. min/max etc.)
     populateColumns: function() {
         for(var i = 0; i < this.data[0].length; i ++) {
             this.columns[this.data[0][i]] = [];
