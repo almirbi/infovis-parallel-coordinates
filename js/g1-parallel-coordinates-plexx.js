@@ -11,6 +11,7 @@ var g1ParallelCoordinatesPlexx = {
     lineWidth: 0.5,
     polylineWidth: 0.5,
     lineColour: '#000000',
+    polylineColour:'#4682b4',
     renderContext: null,
     divId: 'g1',
     columns: new Object,
@@ -118,18 +119,25 @@ var g1ParallelCoordinatesPlexx = {
         return this.canvasHeight * 0.8;
     },
     draw: function () {
+        //create the root node and the context for rendering
         this.renderContext = new Plexx.RenderContext(this.divId);
         this.parallelCoordinatesCanvas = new Plexx.CanvasNode(this.canvasWidth, this.canvasHeight, this.backgroundColor);
 
+        //the axis names are in the first row of the csv
         var axes = this.data[0];
 
+        //get the beginning and the end of the vertical axis on y coordinate
+        //this is always the same so we do it before the loop
         var y1 = this.getVerticalAxisY1();
         var y2 = this.getVerticalAxisY2();
 
         for (var i = 0; i < axes.length; i++) {
 
+            //if the column is the one containing names, skip it
             if(i == this.nameColumnIndex) continue;
 
+            //calculate where to position the vertical axis along the x coordinate
+            //needs to be calibrated a bit a
             var x1 = this.getVerticalAxisX1(i);
             var x2 = this.getVerticalAxisX2(i);
 
@@ -221,7 +229,7 @@ var g1ParallelCoordinatesPlexx = {
                 points.push(this.getVerticalAxisX1(j));
                 points.push(y);
             }
-            this.parallelCoordinatesCanvas.add(new Plexx.PolyLine(points, this.polylineWidth, Constants.LineType.Default, '#4682b4'));
+            this.parallelCoordinatesCanvas.add(new Plexx.PolyLine(points, this.polylineWidth, Constants.LineType.Default, this.polylineColour));
         }
 
         this.parallelCoordinatesCanvas.render(this.renderContext);
