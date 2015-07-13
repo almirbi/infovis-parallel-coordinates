@@ -20,6 +20,8 @@ var g1ParallelCoordinatesPlexx = {
         this.data = null;
         var container = document.getElementById('g1');
         container.innerHTML = '';
+        var debug = document.getElementById('debug-panel');
+        debug.innerHTML = '';
         this.columns = new Object;
         this.renderContext = null;
         this.parallelCoordinatesCanvas = null;
@@ -174,19 +176,36 @@ var g1ParallelCoordinatesPlexx = {
 
             //TODO tickscale not working properly, check it out
             //TODO this was just test code, feel free to rewrite it from beginning if you have a better idea, I am not sure whether this will work
-            //var tickScale = new TickScale();
-            //tickScale.setMinMaxPointsTicks(min, max, this.columns[axes[i]]);
+            var tickScale = new TickScale();
+            tickScale.setMinMaxPointsTicks(min, max, 10);
 
             //getTickSpacing, getRoundedMin, getRoundedMax
 
-            /*
+
             var tick = tickScale.getRoundedMin();
+
+
+
             var k = 0;
-            while (tick < tickScale.getRoundedMax()) {
+            while (k < 10) {
+                if (typeof tick === "undefined") {
+                    console.log('undef');
+                } else {
+                    var tickString = tick;//tick.substr(0, 3);
+                }
                 this.parallelCoordinatesCanvas.add(
-                    new Plexx.Text(tick, this.getVerticalAxisX1(k), this.getVerticalAxisY1() + 100, "#000000", 10, "Verdana", "left", "middle"));
+                    new Plexx.Text(
+                        tickString,
+                        this.getVerticalAxisX1(i),
+                        this.getVerticalAxisY1() + k * ((this.canvasHeight * 0.6) / 9),
+                        "#000000",
+                        10,
+                        "Verdana",
+                        "left",
+                        "middle"));
                 this.parallelCoordinatesCanvas.add(
-                    new Plexx.Line(this.getVerticalAxisX1(k) - 10,
+                    new Plexx.Line(
+                        this.getVerticalAxisX1(k) - 10,
                         this.getVerticalAxisY1() + 100,
                         this.getVerticalAxisX1(k),
                         this.getVerticalAxisY1() + 100,
@@ -196,7 +215,7 @@ var g1ParallelCoordinatesPlexx = {
                 k++;
                 tick += tickScale.getTickSpacing();
             }
-            */
+
 
 
             if (max == min) {
@@ -248,7 +267,8 @@ var g1ParallelCoordinatesPlexx = {
             }
             this.parallelCoordinatesCanvas.add(new Plexx.PolyLine(points, this.polylineWidth, Constants.LineType.Default, this.polylineColour));
         }
-
+        var debugPanel = new Plexx.DebugHelper("debug-panel", this.renderContext,
+            this.parallelCoordinatesCanvas);
         this.parallelCoordinatesCanvas.render(this.renderContext);
     },
     //create arrays which are actually columns, for easier calculating later (e.g. min/max etc.)
